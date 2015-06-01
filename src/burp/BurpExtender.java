@@ -111,7 +111,18 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
             // attempt to unstring
             value = value.replaceAll("\\\"", "\"");
             
-            stdout.print(value);
+            // attempt to convert to json
+            JSONObject nestedJson;
+            try{
+                nestedJson = new JSONObject(value);
+            }
+            catch(JSONException ex){
+                // not a json object
+                continue;
+            }
+            
+            // At this point it is nested JSON
+            
             
         }
         
