@@ -51,12 +51,13 @@ public class BurpExtenderTest {
      */
     @Test
     public void testGetInsertionPoints() {
-        System.out.println("getInsertionPoints");
         IHttpRequestResponse baseRequestResponse = new TestHttpRequest();
         List<IScannerInsertionPoint> result = instance.getInsertionPoints(baseRequestResponse);
+        
         // check that the right number of insertion points were returned
         assertNotNull("No insertion points returned", result);
         assertEquals("Insertion points count mismatch", result.size(), 5);
+        
     }
     
 }

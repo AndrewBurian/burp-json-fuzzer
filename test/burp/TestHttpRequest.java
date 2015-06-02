@@ -11,7 +11,7 @@ package burp;
  */
 public class TestHttpRequest implements IHttpRequestResponse {
 
-    private String request = "POST /messages?_dc=1433200424520 HTTP/1.1\n"
+    private final String request = "POST /messages?_dc=1433200424520 HTTP/1.1\n"
             + "Host: lb-macell2-cpqa1-van.dev-globalrelay.net\n"
             + "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0\n"
             + "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n"
@@ -34,6 +34,11 @@ public class TestHttpRequest implements IHttpRequestResponse {
     public byte[] getRequest() {
 
         return request.getBytes();
+    }
+    
+    @Override
+    public String toString(){
+        return request;
     }
 
     @Override

@@ -26,7 +26,7 @@ public class TestParameter implements IParameter {
         // I'll just parse this too
         // oh wait
         // no I won't
-        return "\n"
+        return ""
                 + "{\"selectionRequest\":\"null\",\"criteria\":\"{\\\"haswords\\\":\\\"hey-hey goodbye\\\""
                 + ",\\\"start\\\":0,\\\"end\\\":32990191199999,\\\"queryId\\\":1433200424439,\\\"searchTime\\\":1433200424439}\",\"page\":1,\"start\":0,\"limit\":200,\"sortBy\":\"dateMs\",\"dir\":\"DESC\"}";
     }

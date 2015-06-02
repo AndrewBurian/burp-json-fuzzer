@@ -20,7 +20,7 @@ public class TestCallback implements IBurpExtenderCallbacks{
 
     @Override
     public void setExtensionName(String name) {
-        System.err.println("Extension Name Set to " + name);
+        System.out.println("Callbackes: Extension Name Set to " + name);
     }
 
     @Override
