@@ -68,7 +68,7 @@ public class BurpExtenderTest {
 
         // check that the right number of insertion points were returned
         assertNotNull("No insertion points returned", result);
-        assertEquals("Insertion points count mismatch", result.size(), 5);
+        assertEquals("Insertion points count mismatch", result.size(), 15);
 
     }
 
