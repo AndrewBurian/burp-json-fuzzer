@@ -7,6 +7,7 @@ package burp;
 
 import java.util.List;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -64,6 +65,8 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
         if (dataParameter == null){
             return null;
         }
+        
+        List<IScannerInsertionPoint> nestedInsertionPoints = new ArrayList<>();
         
         // Get the data in string format
         String data = dataParameter.getValue();
@@ -123,10 +126,10 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
             
             // At this point it is nested JSON
             
-            
+            nestedInsertionPoints.add(new InsertionPoint(baseRequestResponse.getRequest(), nestedJson.toString()));
         }
         
-        return null;
+        return nestedInsertionPoints;
         
     }
     
@@ -135,6 +138,22 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
      */
     private class InsertionPoint implements IScannerInsertionPoint
     {
+        private final byte[] baseRequest;
+        private final String insertionPointPrefix;
+        private final String insertionPointSuffix;
+        private final String baseValue;
+        
+        InsertionPoint(byte[] baseRequest, String dataParameter) {
+            this.baseRequest = baseRequest;
+            
+            int start = dataParameter.indexOf(":") + 2;
+            insertionPointPrefix = dataParameter.substring(0, start);
+            int end = dataParameter.indexOf(",") - 1;
+            if (end == -1)
+                end = dataParameter.length() - 1;
+            baseValue = dataParameter.substring(start, end);
+            insertionPointSuffix = dataParameter.substring(end, dataParameter.length());
+        }
 
         @Override
         public String getInsertionPointName() {
@@ -143,12 +162,14 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
 
         @Override
         public String getBaseValue() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return baseValue;
         }
 
         @Override
         public byte[] buildRequest(byte[] payload) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            String input = insertionPointPrefix + helpers.bytesToString(payload) + insertionPointSuffix;
+            input = helpers.urlEncode(helpers.base64Encode(input));
+            return helpers.updateParameter(baseRequest, helpers.buildParameter("data", input, IParameter.PARAM_BODY));
         }
 
         @Override
