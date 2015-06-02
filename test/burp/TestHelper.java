@@ -36,10 +36,17 @@ public class TestHelper implements IExtensionHelpers {
 
     @Override
     public IParameter getRequestParameter(byte[] request, String parameterName) {
-        // oh yeah, we'll go parse that right up for yo-... wait!
-        // what's this totally not bogus object here!
-        // seems legit
-        return new TestParameter();
+        
+        if (parameterName.equals("data")) {
+            String stringRequest = new String(request);
+            int end = stringRequest.lastIndexOf("\n");
+            String data = stringRequest.substring(end + 1);
+
+            return new TestParameter(data);
+        }
+        
+        // one-trick pony
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -146,5 +153,5 @@ public class TestHelper implements IExtensionHelpers {
     public IScannerInsertionPoint makeScannerInsertionPoint(String insertionPointName, byte[] baseRequest, int from, int to) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }
