@@ -10,6 +10,12 @@ package burp;
  * @author andrew.burian
  */
 public class TestParameter implements IParameter {
+    
+    private String value;
+    
+    public TestParameter(String val){
+        value = val;
+    }
 
     @Override
     public byte getType() {
@@ -23,12 +29,7 @@ public class TestParameter implements IParameter {
 
     @Override
     public String getValue() {
-        // I'll just parse this too
-        // oh wait
-        // no I won't
-        return ""
-                + "{\"selectionRequest\":\"null\",\"criteria\":\"{\\\"haswords\\\":\\\"hey-hey goodbye\\\""
-                + ",\\\"start\\\":0,\\\"end\\\":32990191199999,\\\"queryId\\\":1433200424439,\\\"searchTime\\\":1433200424439}\",\"page\":1,\"start\":0,\"limit\":200,\"sortBy\":\"dateMs\",\"dir\":\"DESC\"}";
+        return value;
     }
 
     @Override
