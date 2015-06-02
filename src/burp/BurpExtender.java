@@ -8,6 +8,8 @@ package burp;
 import java.util.List;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.regex.*;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -66,14 +68,12 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
             return null;
         }
         
-        List<IScannerInsertionPoint> nestedInsertionPoints = new ArrayList<>();
-        
         // Get the data in string format
         String data = dataParameter.getValue();
         
         // Check if this is JSON
         int start = data.indexOf("{");
-        int end = data.lastIndexOf("}");
+        int end = data.lastIndexOf("}") + 1;
         
         if (start == -1 || end == -1 || end < start){
             return null;
@@ -95,41 +95,24 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
         // Master JSON object now retreived, now look for nested objects
         // encoded into string values
         
-        // Get the list of all keys in this object
-        String keys[] = JSONObject.getNames(json);
+        List<IScannerInsertionPoint> points = new ArrayList<>();
         
-        // Loop through the keys looking for strings
-        for (String key : keys){
-            
-            String value;
-            
-            // see if there's a string value associated with this key
-            try{
-                value = json.getString(key);
-            }
-            catch(JSONException ex){
-                continue;
-            }
-            
-            // attempt to unstring
-            value = value.replaceAll("\\\"", "\"");
-            
-            // attempt to convert to json
-            JSONObject nestedJson;
-            try{
-                nestedJson = new JSONObject(value);
-            }
-            catch(JSONException ex){
-                // not a json object
-                continue;
-            }
-            
-            // At this point it is nested JSON
-            
-            nestedInsertionPoints.add(new InsertionPoint(baseRequestResponse.getRequest(), nestedJson.toString()));
+        // Load up the regex to find them
+        Pattern stringJsonRegex = 
+                Pattern.compile("((\\\\\\\"[^\\\\\\\"]+\\\\\\\")(:\\\\\\\"[^\\\\\\\"]*\\\\\\\"|:-?\\d+(\\.\\d+)?([eE]-?\\d+)?))");
+        
+        Matcher matches = stringJsonRegex.matcher(baseRequestResponse.toString());
+        
+        while(matches.find()){
+            stderr.format("Found the object <%s> between %d:%d\n", matches.group(), matches.start(), matches.end());
+            points.add(new InsertionPoint(baseRequestResponse.getRequest(), matches.start(), matches.end()));
         }
         
-        return nestedInsertionPoints;
+        if(points.isEmpty()){
+            return null;
+        }
+        
+        return points;
         
     }
     
@@ -138,26 +121,42 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
      */
     private class InsertionPoint implements IScannerInsertionPoint
     {
-        private final byte[] baseRequest;
         private final String insertionPointPrefix;
         private final String insertionPointSuffix;
         private final String baseValue;
+        private final String name;
+        private final int offset;
         
-        InsertionPoint(byte[] baseRequest, String dataParameter) {
-            this.baseRequest = baseRequest;
+        InsertionPoint(byte[] baseRequest, int startIndex, int endIndex) {
             
-            int start = dataParameter.indexOf(":") + 2;
-            insertionPointPrefix = dataParameter.substring(0, start);
-            int end = dataParameter.indexOf(",") - 1;
-            if (end == -1)
-                end = dataParameter.length() - 1;
-            baseValue = dataParameter.substring(start, end);
-            insertionPointSuffix = dataParameter.substring(end, dataParameter.length());
+            // Convert the entire base request into a string
+            String baseRequestStr = new String(baseRequest);
+            
+            // grab the section identified by the regex
+            String baseValueTmp = baseRequestStr.substring(startIndex, endIndex);
+            System.err.println(baseValueTmp);
+            
+            // find the seperator
+            int midIndex = baseValueTmp.indexOf(":") + 1;
+            
+            // use the key as the name of this insertion point
+            name = baseValueTmp.substring(0, midIndex - 1).replaceAll("\\\"", "");
+            
+            // move the start index to grab the value
+            startIndex += midIndex;
+            baseValue = baseRequestStr.substring(startIndex, endIndex);
+            offset = startIndex;
+            System.err.println(baseValue);
+            
+            // take before and after the base value and store them seperatly
+            insertionPointPrefix = baseRequestStr.substring(0, startIndex);
+            insertionPointSuffix = baseRequestStr.substring(endIndex);
+            
         }
 
         @Override
         public String getInsertionPointName() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return name;
         }
 
         @Override
@@ -167,19 +166,18 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
 
         @Override
         public byte[] buildRequest(byte[] payload) {
-            String input = insertionPointPrefix + helpers.bytesToString(payload) + insertionPointSuffix;
-            input = helpers.urlEncode(helpers.base64Encode(input));
-            return helpers.updateParameter(baseRequest, helpers.buildParameter("data", input, IParameter.PARAM_BODY));
+            return (insertionPointPrefix + JSONObject.quote(new String(payload)) + insertionPointSuffix).getBytes();
         }
 
         @Override
         public int[] getPayloadOffsets(byte[] payload) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            int offsets[] = { offset, offset + payload.length };
+            return offsets;
         }
 
         @Override
         public byte getInsertionPointType() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return INS_EXTENSION_PROVIDED;
         }
         
     }
