@@ -35,7 +35,7 @@ public class BurpExtenderTest {
     
     @Before
     public void setUp() {
-        callbacks = new TestCallbacks();
+        callbacks = new TestCallback();
         instance = new BurpExtender();
         instance.registerExtenderCallbacks(callbacks);
     }
@@ -55,6 +55,7 @@ public class BurpExtenderTest {
         IHttpRequestResponse baseRequestResponse = new TestHttpRequest();
         List<IScannerInsertionPoint> result = instance.getInsertionPoints(baseRequestResponse);
         // check that the right number of insertion points were returned
+        assertNotNull("No insertion points returned", result);
         assertEquals("Insertion points count mismatch", result.size(), 5);
     }
     

@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @author andrew.burian
  */
-public class TestCallbacks implements IBurpExtenderCallbacks{
+public class TestCallback implements IBurpExtenderCallbacks{
 
     @Override
     public void setExtensionName(String name) {
@@ -25,7 +25,7 @@ public class TestCallbacks implements IBurpExtenderCallbacks{
 
     @Override
     public IExtensionHelpers getHelpers() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new TestHelper();
     }
 
     @Override
@@ -75,7 +75,8 @@ public class TestCallbacks implements IBurpExtenderCallbacks{
 
     @Override
     public void registerScannerInsertionPointProvider(IScannerInsertionPointProvider provider) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // uh... thanks?
+        // we'll take your word for it.
     }
 
     @Override
