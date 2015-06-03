@@ -90,7 +90,7 @@ public class BurpExtender implements IBurpExtender, IScannerInsertionPointProvid
 
         // Load up the regex to find them
         Pattern stringJsonRegex
-                = Pattern.compile("((\\\\\\\"[^\\\\\\\"]+\\\\\\\")(:\\\\\\\"[^\\\\\\\"]*\\\\\\\"|:-?\\d+(\\.\\d+)?([eE]-?\\d+)?))");
+                = Pattern.compile("((\\\\\\\"[^\\\\\\\"]+\\\\\\\"\\s*)(:\\s*\\\\\\\"[^\\\\\\\"]*\\\\\\\"|:\\s*-?\\d+(\\.\\d+)?([eE]-?\\d+)?))");
         // Regex finds string-escaped json key-value pairs where the value is either a string-escaped string or a json accepted number
         // ... god regex is ugly
 
